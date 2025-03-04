@@ -29,7 +29,7 @@ jobs:
       - name: Setup TFM
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: ~>1.7
+          terraform_version: ~>1.11
           terraform_wrapper: false
 
       - name: TFM check format
