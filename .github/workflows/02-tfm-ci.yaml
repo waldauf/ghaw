@@ -1,0 +1,65 @@
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.tf'
+      - '.github/workflows/02-tfm-ci.yaml'
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.tf'
+      - '.github/workflows/02-tfm-ci.yaml'
+
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    name: TFM Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkou code
+        uses: actions/checkout@v3
+
+      - name: Setup TFM
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ~>1.7
+          terraform_wrapper: false
+
+      - name: TFM check format
+        id: fmt
+        run: |
+          terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: TFM Init
+        id: init
+        run: |
+          cd terraform-01
+          terraform init -backend=false
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v3
+        with:
+          tflint_version: v0.44.1
+
+      - name: Run TFLint
+        run: |
+          cd terraform-01
+          tflint --format=compact
+
+      - name: Setup TFsec
+        uses: aquasecurity/tfsec-actions@v1.0.0
+
+      - name: Run TFsec
+        run: |
+          cd terraform-01
+          tfsec .
+  
+      
