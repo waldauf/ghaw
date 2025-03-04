@@ -59,9 +59,15 @@ jobs:
         with:
           working_directory: terraform-01
 
-      # - name: Run TFsec
-      #   run: |
-      #     cd terraform-01
-      #     tfsec .
-  
+      - name: Validate all envs in terraform-02
+        run: |
+          for env_dir in terraform-02/clusters/*; do
+            if [[ -d $env_dir ]]; then
+              echo "Validating dir: $env_dir"
+              cd $env_dir
+              terraform init -backend=false
+              terraform validate
+              cd - > /dev/null
+            fi
+          done  
       
