@@ -1,3 +1,5 @@
+![Terraform CI](https://github.com/waldauf/ghaw/actions/workflows/terraform-ci.yml/badge.svg)
+
 # PostgreSQL Multi-Deployment Management with Terraform
 
 ## Assignment
