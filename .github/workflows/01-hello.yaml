@@ -28,11 +28,3 @@ jobs:
         run: |
           ls -la
           ls -ld ${PWD}
-
-      - name: Check TFM version
-        run: |
-          terraform version
-          echo "TFM is prepared to use"
-          
-          
-    

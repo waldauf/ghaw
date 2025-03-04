@@ -56,10 +56,12 @@ jobs:
 
       - name: Setup TFsec
         uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: terraform-01
 
-      - name: Run TFsec
-        run: |
-          cd terraform-01
-          tfsec .
+      # - name: Run TFsec
+      #   run: |
+      #     cd terraform-01
+      #     tfsec .
   
       
