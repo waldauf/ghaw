@@ -1,4 +1,4 @@
-![Terraform CI](https://github.com/waldauf/ghaw/actions/workflows/terraform-ci.yml/badge.svg)
+![Terraform CI](https://github.com/waldauf/ghaw/actions/workflows/01-tfm-ci.yml/badge.svg)
 
 # PostgreSQL Multi-Deployment Management with Terraform
 
