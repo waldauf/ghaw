@@ -55,7 +55,7 @@ jobs:
           tflint --format=compact
 
       - name: Setup TFsec
-        uses: aquasecurity/tfsec-actions@v1.0.0
+        uses: aquasecurity/tfsec-action@v1.0.0
 
       - name: Run TFsec
         run: |
