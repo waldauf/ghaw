@@ -1,4 +1,4 @@
-name: Terraform Deploy
+name: Artifact Management
 
 on:
   push:
