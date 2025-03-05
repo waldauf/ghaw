@@ -1,0 +1,120 @@
+name: Terraform Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform-02/**'
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+
+jobs:
+  plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10  # Increase this value
+    strategy:
+      matrix:
+        environment: [dev, test, prod]
+        include:
+          - environment: dev
+            port: 5432
+          - environment: test
+            port: 5433
+          - environment: prod
+            port: 5434
+
+    steps:
+      - name: Checkout version
+        uses: actions/checkout@v3
+
+      - name: Setup TFM
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ~> 1.11
+          terraform_wrapper: false
+
+      - name: TFM init
+        id: init
+        run: |
+          cd terraform-02/clusters/${{ matrix.environment }}
+          terraform init -backend=false
+
+
+      - name: TFM plan
+        run: |
+          cd terraform-02/clusters/${{ matrix.environment }}      
+          terraform plan -no-color -out=plan.tfplan
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ matrix.environment }}
+          path: terraform-02/clusters/${{ matrix.environment }}/plan.tfplan
+          retention-days: 1
+
+      - name: Setup TFsec
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: terraform-02/clusters/${{ matrix.environment }}
+
+          
+      
+  approve:
+    name: Approve Deployment
+    needs: plan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    environment: ${{ github.event.inputs.environment }}
+
+
+    steps:
+      - name: Approve
+        run: |
+          echo "Deployment to ${{ github.event.inputs.environment }} has been approved"
+    
+          
+  apply:
+    name: Terraform Apply
+    needs:
+      - plan
+      - approve
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup TFM
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ~>1.11
+
+      - name: Download Plan
+        uses: actions/download-artifact@v4 
+        with:
+          name: terraform-plan-${{ github.event.inputs.environment }}
+          path: terraform-02/clusters/${{ github.event.inputs.environment }}
+
+      - name: TFM Init
+        run: |
+          cd terraform-02/clusters/${{ github.event.inputs.environment }}
+          terraform init -backend=false
+
+      - name: Terraform Apply
+        run: |
+          cd terraform-02/clusters/${{ github.event.inputs.environment }}
+          terraform apply -var="postgres_root_password=${{ secrets.POSTGRES_ROOT_PASSWORD }}" -auto-approve plan.tfplan
+          
